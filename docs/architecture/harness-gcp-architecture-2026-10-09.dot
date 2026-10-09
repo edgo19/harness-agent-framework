@@ -1,0 +1,60 @@
+digraph Architecture {
+  graph [rankdir=TB, bgcolor="white", fontname="Helvetica", fontsize=22, labelloc=t, label="Enterprise Multi-Agent Harness | GCP Resource Architecture\n9 October 2026", pad=0.35, nodesep=0.40, ranksep=0.70, compound=true];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#8a99ad", fontname="Helvetica", fontsize=12, margin="0.18,0.12"];
+  edge [color="#62748b", arrowsize=0.7, fontname="Helvetica", fontsize=10];
+  subgraph cluster_delivery {label="EXISTING ENTERPRISE DELIVERY"; fontsize=14; color="#cbd5e1"; style="rounded,filled"; fillcolor="#f8fafc";
+    git [label="Requests / schedules / infrastructure Git"];
+    tf [label="Terragrunt / Terraform pipeline"];
+    appci [label="Application CI"];
+    jf [label="JFrog\nImmutable image digests"];
+    cd [label="CD repository + Argo CD ApplicationSet"];
+    git->tf; appci->jf; jf->cd [label="image reference"];
+  }
+  subgraph cluster_gcp {label="GCP HARNESS PROJECT — ONE APPROVED REGION INITIALLY"; fontsize=16; color="#4285f4"; penwidth=1.4; style="rounded,filled"; fillcolor="#f8fbff";
+    subgraph cluster_event {label="REQUESTS AND SCHEDULING"; fontsize=13; color="#b6c9e8"; style=rounded;
+      req [label="GCS request bucket\nImmutable ad-hoc manifests", fillcolor="#e8f0fe"];
+      config [label="GCS configuration bucket\nVersioned execution / schedule registry", fillcolor="#e8f0fe"];
+      sched [label="Cloud Scheduler\nOne-minute Pub/Sub heartbeat", fillcolor="#e8f0fe"];
+      ps [label="Pub/Sub ad-hoc topic\nPull subscription", fillcolor="#e8f0fe"];
+      ticks [label="Pub/Sub schedule-ticks topic\nPull subscription", fillcolor="#e8f0fe"];
+      dlq [label="Pub/Sub dead-letter topic\nTriage subscription", fillcolor="#fff4e5"];
+      {rank=same; req; config; sched;}
+      {rank=same; ps; ticks; dlq;}
+      req->ps [label="OBJECT_FINALIZE"]; sched->ticks;
+      ps->dlq [style=dashed, label="failed admission"]; ticks->dlq [style=dashed];
+    }
+    subgraph cluster_runtime {label="PRIVATE REGIONAL GKE — EXISTING SUITABLE CLUSTER OR AUTOPILOT"; fontsize=13; color="#34a853"; style="rounded,filled"; fillcolor="#f3faf5";
+      dispatcher [label="Dispatcher / reconciler\n2 x 250m CPU / 512 MiB\nValidate, dedupe, admit due runs", fillcolor="#e2f3e6"];
+      worker [label="Kubernetes worker Jobs\nDeep Agents + LangGraph + LangChain\n1 vCPU / 2 GiB; max 5 active runs\nLocal specialist subagents", fillcolor="#e2f3e6", penwidth=1.5];
+      gateway [label="Policy-enforcing tools / MCP gateway\n2 x 500m CPU / 1 GiB\nSeparate backend identities by domain", fillcolor="#e2f3e6"];
+      collector [label="OpenTelemetry Collector\n2 x 200m CPU / 512 MiB\nStandard OTLP; metadata-first", fillcolor="#e2f3e6"];
+      dispatcher->worker [label="fixed Job templates"];
+      worker->gateway [label="authenticated + scoped calls"];
+      dispatcher->collector [style=dashed]; worker->collector [style=dashed]; gateway->collector [style=dashed];
+    }
+    subgraph cluster_services {label="PERSISTENCE, MODELS AND IDENTITY"; fontsize=13; color="#b6c9e8"; style=rounded;
+      sql [label="Cloud SQL PostgreSQL — regional HA\n2 vCPU / 8 GiB / 50 GiB SSD\nLedger, leases, schedule cursor\nLangGraph checkpoints; optional store", fillcolor="#e8f0fe"];
+      evidence [label="GCS evidence + reports\nScoped access / lifecycle retention", fillcolor="#e8f0fe"];
+      vertex [label="Vertex AI\nApproved regional model / quota", fillcolor="#e8f0fe"];
+      secrets [label="Secret Manager\nScoped backend / pull credentials", fillcolor="#e8f0fe"];
+      identity [label="Workload Identity Federation for GKE\nDedicated KSAs / Google service accounts", fillcolor="#e8f0fe"];
+      network [label="Private VPC / Google API access / SQL\nControlled egress + existing Azure routes\nDNS, network policy, admission policy", fillcolor="#e8f0fe"];
+      state [label="Secured Terraform state\nReuse enterprise backend", fillcolor="#e8f0fe"];
+      {rank=same; sql; evidence; vertex;}
+      {rank=same; secrets; identity; network;}
+      sql->secrets [style=invis]; evidence->identity [style=invis]; vertex->network [style=invis];
+      identity->state [style=invis];
+    }
+    observability [label="Cloud Logging + Cloud Trace\nCloud Monitoring / Managed Prometheus\nAudit logs, dashboards and alerts", fillcolor="#f2eafe", color="#9b7ac5"];
+  }
+  backends [label="ENTERPRISE READ-ONLY BACKENDS\nJFrog / Azure DevOps / Argo CD / Grafana\nGCP / GKE / Firestore / Azure / AKS", fillcolor="#f8fafc", fontsize=13];
+  tf->req; tf->config; tf->sched; tf->state [style=dashed];
+  cd->dispatcher [label="deploy workloads / policies", color="#34a853"];
+  jf->worker [label="image pull", style=dashed, color="#34a853"];
+  ps->dispatcher; ticks->dispatcher; config->dispatcher;
+  dispatcher->sql; worker->sql;
+  worker->evidence; worker->vertex;
+  gateway->sql [label="scope / attempt / audit"]; gateway->secrets; gateway->backends; gateway->evidence [style=dashed];
+  collector->observability; identity->worker [style=dashed, color="#a0aabb", constraint=false];
+  network->gateway [style=dashed, color="#a0aabb", constraint=false];
+}

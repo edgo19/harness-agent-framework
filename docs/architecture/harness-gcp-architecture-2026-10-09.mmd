@@ -1,0 +1,60 @@
+flowchart TB
+  subgraph DELIVERY[Enterprise delivery]
+    REPO["Requests, schedules and infrastructure Git"] --> TF["Terragrunt / Terraform pipeline"]
+    CI["Application CI"] --> JF["JFrog: immutable image digests"]
+    CD["Application CD Git"] --> ARGO["Argo CD ApplicationSet"]
+  end
+  subgraph GCP["GCP harness project — one region initially"]
+    REQUESTS["GCS request bucket<br/>immutable request objects"]
+    CONFIG["GCS configuration bucket<br/>versioned execution and schedule registry"]
+    ADHOC["Pub/Sub ad-hoc notifications<br/>topic + pull subscription"]
+    CLOCK["Cloud Scheduler<br/>one-minute heartbeat"]
+    TICKS["Pub/Sub schedule ticks<br/>topic + pull subscription"]
+    DLQ["Pub/Sub dead-letter topic<br/>triage subscription"]
+    SQL["Cloud SQL PostgreSQL, regional HA<br/>run ledger, leases, schedule cursor<br/>LangGraph checkpoints / optional store"]
+    EVIDENCE["GCS evidence + report buckets<br/>scoped access and lifecycle retention"]
+    VERTEX["Vertex AI<br/>approved regional model"]
+    IAM["Workload Identity Federation for GKE<br/>separate runtime service accounts"]
+    STATE["Secured Terraform state<br/>existing enterprise backend"]
+    SECRETS["Secret Manager<br/>scoped backend credentials"]
+    OBS["Cloud Logging + Cloud Trace<br/>Cloud Monitoring / Managed Prometheus<br/>dashboards, alerts and audit logs"]
+    subgraph VPC["Private VPC / existing enterprise network"]
+      subgraph GKE["Regional GKE — existing suitable cluster or Autopilot"]
+        DISPATCH["Dispatcher / reconciler: 2 replicas<br/>validation, deduplication, admission<br/>due schedules and deterministic Jobs"]
+        JOBS["Bounded Kubernetes worker Jobs<br/>Deep Agents + LangGraph + LangChain<br/>local specialist subagents"]
+        BROKER["Policy-enforcing tool / MCP gateway<br/>separate identity by execution domain"]
+        OTEL["OpenTelemetry Collector<br/>standard OTLP telemetry"]
+      end
+      NET["Private Google Access + private SQL access<br/>restricted egress / Cloud NAT where needed<br/>existing inter-cloud connectivity"]
+    end
+  end
+  BACKENDS["Read-only backend APIs<br/>JFrog, ADO, Argo CD, Grafana<br/>GCP / GKE / Firestore, Azure / AKS"]
+  TF --> STATE
+  TF --> REQUESTS
+  TF --> CONFIG
+  TF --> CLOCK
+  REQUESTS -->|OBJECT_FINALIZE| ADHOC
+  CLOCK --> TICKS
+  ADHOC --> DISPATCH
+  TICKS --> DISPATCH
+  ADHOC -. failed admission .-> DLQ
+  TICKS -. failed admission .-> DLQ
+  CONFIG --> DISPATCH
+  DISPATCH --> SQL
+  DISPATCH --> JOBS
+  IAM -. workload credentials .-> GKE
+  JOBS --> SQL
+  JOBS --> EVIDENCE
+  JOBS --> VERTEX
+  JOBS --> BROKER
+  BROKER --> SQL
+  BROKER --> SECRETS
+  BROKER --> BACKENDS
+  BROKER --> EVIDENCE
+  DISPATCH -. telemetry .-> OTEL
+  JOBS -. telemetry .-> OTEL
+  BROKER -. telemetry .-> OTEL
+  OTEL --> OBS
+  GKE -. stdout and platform metrics .-> OBS
+  JF -->|image pull| GKE
+  ARGO -->|deploy workloads and policies| GKE
