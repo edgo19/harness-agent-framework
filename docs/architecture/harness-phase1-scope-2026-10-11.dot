@@ -1,0 +1,49 @@
+digraph Phase1 {
+  graph [rankdir=TB, bgcolor="white", fontname="Helvetica", fontsize=20, labelloc=t, label="Enterprise CI/CD Harness | Phase 1 Tool Access\n11 October 2026", pad=0.3, nodesep=0.4, ranksep=0.65];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#94a3b8", fontname="Helvetica", fontsize=12, margin="0.16,0.12"];
+  edge [color="#64748b", arrowsize=0.7, fontname="Helvetica", fontsize=10];
+
+  tf [label="Existing Terraform modules\nCredential values and rollover", fillcolor="#f1f5f9"];
+  gsm [label="Google Secret Manager\nADO SP certificate, JFrog token\nSeparate Argo CD credentials", fillcolor="#e8f0fe"];
+  tf -> gsm;
+
+  subgraph cluster_gke {
+    label="EXISTING GKE OBSERVABILITY CLUSTER"; fontname="Helvetica"; fontsize=15; color="#34a853"; style="rounded,filled"; fillcolor="#f3faf5";
+    eso [label="Existing External Secrets Operator\nExisting WIF identity reads GSM"];
+    secrets [label="Explicit Kubernetes Secret mappings\nMounted only in corresponding connectors"];
+    worker [label="Agent Jobs in isolated run namespace\nDeep Agents / LangGraph / LangChain\nStart with 2 active Jobs; no backend credentials"];
+    gateway [label="Private authenticated tool gateway\nRun scope, read operations and budgets"];
+    ado [label="ADO connector\nMounted SP certificate"];
+    jf [label="JFrog connector\nMounted read token"];
+    argo [label="Argo CD connectors\nSeparate endpoints / mounted credentials"];
+    telemetry [label="Trusted telemetry connector\nCI/CD source + component scope\nBounded queries and discovery"];
+    loki [label="Existing Loki\nInternal read/query Service", fillcolor="#e8f0fe"];
+    mimir [label="Existing Mimir\nInternal read/query Service", fillcolor="#e8f0fe"];
+    eso -> secrets;
+    worker -> gateway [label="authenticated tool calls"];
+    gateway -> ado;
+    gateway -> jf;
+    gateway -> argo;
+    gateway -> telemetry;
+    secrets -> ado [style=dashed, label="certificate"];
+    secrets -> jf [style=dashed, label="token"];
+    secrets -> argo [style=dashed, label="per-instance credential"];
+    telemetry -> loki [label="LogQL read routes"];
+    telemetry -> mimir [label="PromQL read routes"];
+  }
+
+  gsm -> eso [label="existing operator WIF"];
+  entra [label="Entra app-only token endpoint\nCertificate-signed assertion", fillcolor="#f1f5f9"];
+  adoapi [label="ADO API / approved Git HTTPS", fillcolor="#f1f5f9"];
+  jfapi [label="JFrog API\nArtifact / build metadata", fillcolor="#f1f5f9"];
+  argoapi [label="Argo CD service APIs\nCI/CD instances hosted on GKE / AKS / other infra\nController status; no target log/resource proxy", fillcolor="#f1f5f9"];
+  alloy [label="Existing Alloy collection\nAllowlisted CI/CD infrastructure / tools only\nIncluding AKS infrastructure hosting Argo CD", fillcolor="#f1f5f9"];
+  ado -> entra;
+  ado -> adoapi;
+  jf -> jfapi;
+  argo -> argoapi;
+  alloy -> loki;
+  alloy -> mimir;
+
+  boundary [shape=note, label="INVESTIGATION BOUNDARY\nTarget application GKE / AKS / other Kubernetes clusters are excluded.\nTheir APIs and telemetry are not queried, even if stored centrally.\nAn Argo deployment destination does not grant target-cluster access.", fillcolor="#fff4e5", color="#d97706"];
+}

@@ -1,5 +1,7 @@
 # GCP architecture for the enterprise multi-agent harness
 
+> Baseline research. The [11 October phase-1 scope](harness-phase1-scope-2026-10-11.md) takes precedence: existing observability GKE cluster, TF/GSM/ESO-mounted credentials, ADO certificate authentication, direct internal Loki/Mimir, two initial active Jobs, and CI/CD infrastructure/tools only. Application deployment target clusters and their telemetry are excluded. The broader backend matrix and diagram below do not authorize those integrations in phase 1.
+
 Research snapshot: 9 October 2026. This is a proposed architecture, not a deployed or load-tested system. The resource sizes are starting estimates.
 
 Use the existing suitable regional GKE cluster if enterprise isolation and capacity policies permit it; otherwise use a dedicated regional Autopilot cluster. Deploy application images from JFrog through the existing Argo CD ApplicationSet/CD repository. Terragrunt/Terraform provisions GCP resources, IAM, request objects and the task/schedule registry. Argo CD owns Kubernetes workloads and policy manifests. Avoid assigning the same resource to both controllers.

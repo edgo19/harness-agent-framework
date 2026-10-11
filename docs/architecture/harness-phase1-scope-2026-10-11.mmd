@@ -1,0 +1,33 @@
+flowchart TB
+    TF[Existing Terraform modules] --> GSM[GSM secret values and rollover]
+    subgraph CLUSTER[Existing GKE observability cluster]
+        ESO[Existing External Secrets Operator]
+        KSECRET[Explicit Kubernetes Secret mappings]
+        WORKER[Agent Jobs in harness run namespace]
+        GW[Private tool gateway]
+        ADO[ADO connector]
+        JF[JFrog connector]
+        ARGO[Argo connectors\nseparate endpoint/credential bindings]
+        TELE[Telemetry connector]
+        LOKI[Existing Loki query Service]
+        MIMIR[Existing Mimir query Service]
+        WORKER --> GW
+        GW --> ADO
+        GW --> JF
+        GW --> ARGO
+        GW --> TELE
+        TELE --> LOKI
+        TELE --> MIMIR
+    end
+    GSM -->|Existing operator WIF| ESO
+    ESO --> KSECRET
+    KSECRET -->|Read-only mounted certificate| ADO
+    KSECRET -->|Read-only mounted token| JF
+    KSECRET -->|Instance-specific mounted credentials| ARGO
+    ADO --> ENTRA[Entra app-only token endpoint]
+    ADO --> ADOAPI[ADO API / approved Git HTTPS]
+    JF --> JFAPI[JFrog API]
+    ARGO --> ARGOAPI[Argo CD service APIs\nCI/CD instances hosted on GKE / AKS / other infrastructure]
+    ALLOY[Existing Alloy collection\nallowlisted CI/CD infrastructure / tool sources only] --> LOKI
+    ALLOY --> MIMIR
+    BOUNDARY[Target application GKE / AKS / other Kubernetes clusters excluded\nNo target APIs or telemetry queries]

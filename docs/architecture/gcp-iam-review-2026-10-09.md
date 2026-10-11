@@ -1,5 +1,7 @@
 # GCP IAM and workload identity review — 2026-10-09
 
+> Baseline research. The [11 October phase-1 scope](harness-phase1-scope-2026-10-11.md) and [ESO/credential review](phase1-eso-security-2026-10-11.md) govern current grants: ESO reads the explicit GSM secrets; connectors use mounted credentials; ADO uses its SP certificate; Loki/Mimir use internal read endpoints. Application deployment target clusters and their telemetry are excluded; broad cloud investigation roles and Grafana access are deferred. GCP permissions for operating the harness remain separate.
+
 Scope: architecture review only. No GCP tenant, project, cluster, Azure tenant or enterprise backend credentials were available; no IAM grant or deployment was made. Official Google/GitHub sources and Terraform provider sources were inspected. Direct Google Cloud documentation and IAM API requests were blocked by the research environment's egress proxy, so source citations distinguish verified code examples from role-reference recommendations that must be confirmed during implementation.
 
 ## Proposed topology and assumptions

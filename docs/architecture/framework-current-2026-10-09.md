@@ -1,5 +1,7 @@
 # Current framework review — 2026-10-09
 
+> Framework research snapshot. Apply these capabilities within the [11 October phase-1 scope](harness-phase1-scope-2026-10-11.md): CI/CD infrastructure/tools only, with application deployment target clusters and their telemetry excluded. This review does not define backend permissions.
+
 Research snapshot of official PyPI releases, their source distributions, and the official `langchain-ai/docs` repository. This is a capability and deployment review, not an enterprise integration test or agent quality benchmark. Mutable documentation can describe newer behavior; released source was checked for the material recommendations below.
 
 ## Current released Python packages

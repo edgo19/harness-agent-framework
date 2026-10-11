@@ -1,5 +1,7 @@
 # GCP capacity and observability recommendation
 
+> Baseline research. Use the [11 October phase-1 scope](harness-phase1-scope-2026-10-11.md) and [phase-1 observability review](phase1-observability-access-2026-10-11.md) for current placement, concurrency, telemetry and query boundaries. Reuse the existing observability GKE cluster and Alloy/Loki/Mimir suite; begin with two active Jobs. Investigations cover CI/CD infrastructure/tools only, excluding application deployment target clusters and their telemetry.
+
 Reviewed 2026-10-09. This is a proposed starting configuration, not a measured capacity guarantee or a deployment. The workload assumptions are up to approximately 50 investigations/day, five simultaneous runs, primarily API/log reads, remote model inference, and a typical run lasting 5–30 minutes. Reassess against real run lengths, evidence sizes and backend/model limits.
 
 ## Recommended placement
