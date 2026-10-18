@@ -1,0 +1,29 @@
+schema: Capability/v1
+id: pipeline-observability
+version: 1.0.0-design
+description: Evidence-backed CI/CD infrastructure logs and metrics investigations.
+supported_goals:
+  - targeted_investigation
+  - scheduled_health_check
+skills:
+  - logs-analysis
+  - metrics-analysis
+  - evidence-review
+tools:
+  - telemetry.describe_source
+  - metrics.query
+  - metrics.compare_windows
+  - logs.search
+  - logs.summarize_patterns
+  - evidence.read
+query_mode: typed-builders-and-reviewed-templates
+subagents:
+  - id: metrics-analyst
+    tools: [telemetry.describe_source, metrics.query, metrics.compare_windows]
+  - id: logs-analyst
+    tools: [telemetry.describe_source, logs.search, logs.summarize_patterns]
+  - id: evidence-reviewer
+    tools: [evidence.read]
+max_parallel_subagents: 2
+cross_run_learning: disabled
+report_schema: InvestigationReport/v1

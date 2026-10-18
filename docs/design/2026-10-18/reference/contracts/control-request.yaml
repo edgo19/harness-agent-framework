@@ -1,0 +1,8 @@
+schema: ControlRequest/v1
+operation_id: example-cancel-001
+action: cancel_run
+environment: dev
+target_run_id: example-run-001
+reason: Operator-approved cancellation through the restricted registration path.
+# Dispatcher accepts only from the separately configured operations source.
+# This file and a claimed operator name cannot grant control privileges by themselves.

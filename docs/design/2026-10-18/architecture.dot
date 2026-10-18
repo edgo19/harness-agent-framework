@@ -1,0 +1,61 @@
+digraph Harness {
+  graph [rankdir=TB, bgcolor="white", fontname="Helvetica", fontsize=22, labelloc=t, label="Generic Enterprise Harness | Detailed Design\n18 October 2026 — review draft, not deployed", pad=0.35, nodesep=0.35, ranksep=0.6, compound=true];
+  node [shape=box, style="rounded,filled", fillcolor="#ffffff", color="#94a3b8", fontname="Helvetica", fontsize=11, margin="0.16,0.12"];
+  edge [color="#64748b", fontname="Helvetica", fontsize=9, arrowsize=0.7];
+
+  subgraph cluster_repos {
+    label="FOUR REPOSITORIES / EXISTING ENTERPRISE DELIVERY"; fontsize=14; color="#94a3b8"; style="rounded,filled"; fillcolor="#f8fafc";
+    runtime [label="harness-agent-framework\nGeneric runtime + versioned capability packs"];
+    modules [label="harness-terraform-modules\nReusable cloud modules and contracts"];
+    live [label="harness-infra-live\nTerragrunt, requests, schedules, control intent"];
+    gitops [label="harness-gitops\nKustomize bases / dev-prod overlays / ApplicationSet"];
+    ci [label="Enterprise CI\nChecks, evaluations and image build"];
+    jfrog [label="JFrog\nImmutable image digests"];
+    tf [label="Approved Terraform pipeline\nProvision and register intent"];
+    argo [label="Existing Argo CD\nDeploy application services"];
+    runtime -> ci -> jfrog -> gitops -> argo;
+    modules -> live -> tf;
+  }
+
+  req [label="GCS immutable request objects\nOBJECT_FINALIZE -> Pub/Sub", fillcolor="#e8f0fe"];
+  registry [label="Versioned GCS schedule registry\nCloud Scheduler -> Pub/Sub heartbeat", fillcolor="#e8f0fe"];
+  identity [label="Native GKE WIF + GSAs / IAM\nWorker and gateway class identities", fillcolor="#e8f0fe"];
+  tf -> req;
+  tf -> registry;
+  tf -> identity;
+
+  subgraph cluster_gke {
+    label="EXISTING GKE OBSERVABILITY CLUSTER — PROPOSED HARNESS WORKLOADS"; fontsize=14; color="#34a853"; style="rounded,filled"; fillcolor="#f3faf5";
+    dispatcher [label="Dispatcher / reconciler / finalizer\nAdmit, dedupe, schedule and manage Jobs"];
+    worker [label="Generic worker Jobs\nDeep Agents + LangGraph + LangChain\nReviewed skills, bounded local subagents\nProd: initially 2 active; dev: 1", fillcolor="#e2f3e6"];
+    gateway [label="Private HTTPS tool gateway\nVerify Google ID token + fixed class policy\nTyped tool catalog; optional local OPA", fillcolor="#e2f3e6"];
+    telemetry [label="Telemetry connector\nTyped builders / approved templates\nCI/CD source scope + global query admission", fillcolor="#e2f3e6"];
+    obs [label="Existing internal Loki / Mimir\nExisting Alloy ingestion\nConsumer-only first release", fillcolor="#fff4e5"];
+    extension [label="Capability extension point\nADO / JFrog / separate Argo connectors\nESO-mounted credentials when enabled", style="rounded,dashed,filled", fillcolor="#f8fafc"];
+    dispatcher -> worker [label="fixed admitted Job template"];
+    worker -> gateway [label="worker GSA ID token; aud=gateway"];
+    gateway -> telemetry [label="gateway GSA ID token; aud=connector"];
+    telemetry -> obs [label="bounded CI/CD-only reads"];
+    gateway -> extension [style=dashed, label="future capability activation"];
+  }
+
+  req -> dispatcher;
+  registry -> dispatcher;
+  argo -> dispatcher [label="Kustomize release"];
+  argo -> gateway;
+  argo -> telemetry;
+  identity -> worker [style=dashed];
+  identity -> gateway [style=dashed];
+
+  sql [shape=cylinder, label="Cloud SQL PostgreSQL\nEnvironment ledger and checkpoints\nShared query-budget control", fillcolor="#e8f0fe"];
+  model [label="Regional Vertex AI\nApproved model + token budgets", fillcolor="#e8f0fe"];
+  evidence [label="GCS evidence / JSON + Markdown reports\nProvenance, coverage and retention", fillcolor="#e8f0fe"];
+  dispatcher -> sql;
+  worker -> sql [label="per-run state"];
+  telemetry -> sql [label="global backend reservations"];
+  worker -> model;
+  worker -> evidence;
+  dispatcher -> evidence [label="finalization / interrupted outcome"];
+
+  note [shape=note, label="BOUNDARIES\nEnterprise CI/CD tools and hosting infrastructure only.\nTarget application clusters and their telemetry are excluded.\nNo human harness UI; run IDs are audit context, not permissions.\nNo automatic cross-run learning or shared-stack mutation.", fillcolor="#fff4e5", color="#d97706"];
+}

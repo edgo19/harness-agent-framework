@@ -1,0 +1,27 @@
+schema: QueryBudget/v1
+backend_scope: shared-observability-query-services
+global_concurrency:
+  loki: 1
+  mimir: 1
+# Coordinates all replicas and environments using the same backend scope.
+consumer_limits:
+  initial_window_seconds: 1800
+  max_call_window_seconds: 3600
+  max_log_lookback_seconds: 86400
+  max_metric_baseline_lookback_seconds: 604800
+  max_run_source_seconds_per_backend: 14400
+  query_timeout_seconds: 15
+  max_response_bytes: 2097152
+  max_log_lines: 1000
+  max_metric_series: 100
+  max_metric_points: 20000
+  max_run_query_calls: 30
+  max_run_retrieved_bytes: 20971520
+  max_transient_retries: 1
+backend_input_limits:
+  installed_backend_validation_required: true
+  fetched_series_limit: null
+  fetched_chunk_bytes_limit: null
+  loki_scan_byte_limit_supported: null
+  release_after_timeout: only-after-confirmed-completion-or-safe-backend-expiry
+# Consumer output limits do not establish hard bounds on backend input/scanning.

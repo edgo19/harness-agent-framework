@@ -1,0 +1,19 @@
+schema: TaskRequest/v1
+request_id: example-argo-latency-001
+capability: pipeline-observability@1.0.0-design
+goal: Explain increased reconciliation latency in the Azure-CD Argo infrastructure.
+parameters:
+  sources: [argo-azure-cd-infrastructure]
+  time_window:
+    lookback: 30m
+  analysis_mode: targeted
+requested_limits:
+  model_calls: 20
+  backend_query_calls: 30
+  retrieved_bytes: 20971520
+  wall_seconds: 900
+outputs:
+  formats: [json, markdown]
+  destination: configured-gcs-reports
+# The request cannot select credentials, an endpoint, a tenant, or a new permission.
+# Every source must be enabled in trusted environment configuration before execution.

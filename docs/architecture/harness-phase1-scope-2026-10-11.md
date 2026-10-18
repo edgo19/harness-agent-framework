@@ -1,6 +1,8 @@
 # Initial scope using the existing enterprise infrastructure
 
-This scope adopts the user's clarifications on 11 October 2026 and is the authoritative phase-1 design. It supersedes the earlier connector-side GSM fetch, Google-to-Entra federation for ADO, Grafana-query, dedicated-cluster placement and five-concurrent-run proposals for the initial implementation. Infrastructure has not been deployed or modified.
+> Historical phase-1 snapshot. The [18 October detailed design](../design/2026-10-18/README.md) governs current implementation sequencing, simplified class authentication, repository structure, memory, query protection and operations. The CI/CD-only investigation boundary below remains unchanged.
+
+This snapshot records the user's clarifications on 11 October 2026. At that point it superseded the earlier connector-side GSM fetch, Google-to-Entra federation for ADO, Grafana-query, dedicated-cluster placement and five-concurrent-run proposals. Use the linked detailed design for current implementation decisions. Infrastructure has not been deployed or modified.
 
 ## Investigation boundary
 

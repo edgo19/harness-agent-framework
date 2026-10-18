@@ -1,0 +1,42 @@
+schema: InvestigationReport/v1
+example_only: true
+run_id: example-run-001
+outcome: partial
+task:
+  request_id: example-argo-latency-001
+  capability: pipeline-observability@1.0.0-design
+release:
+  runtime_digest: REPLACE_WITH_ADMITTED_IMAGE_DIGEST
+  source_inventory_revision: REPLACE_WITH_VERIFIED_REVISION
+  policy_revision: REPLACE_WITH_REVIEWED_POLICY_REVISION
+  model: REPLACE_WITH_APPROVED_REGIONAL_MODEL
+coverage:
+  - source: argo-azure-cd-infrastructure
+    logs: partial
+    metrics: unavailable
+    reason: illustrative-log-limit-and-missing-metric-family
+    freshness: unverified
+findings:
+  - id: example-finding
+    category: observation
+    statement: Illustrative controller timeout messages occur in the bounded sample.
+    evidence_refs: [example-evidence-001]
+    limitation: This example establishes neither event completeness nor a destination-cluster cause.
+hypotheses:
+  - statement: A destination communication issue is an unverified explanation.
+    status: unproven
+    evidence_refs: [example-evidence-001]
+recommendations:
+  - action: Ask the CI/CD infrastructure owner to review the cited controller observations.
+    execution: recommendation-only
+excluded_scope:
+  - target-application-cluster-apis-and-telemetry
+evidence:
+  - id: example-evidence-001
+    object_ref: gs://example-harness-evidence/example/sanitized-excerpt.jsonl
+    object_generation: REPLACE_WITH_GCS_GENERATION
+    sha256: REPLACE_WITH_SANITIZED_OBJECT_HASH
+    template: bounded-errors
+    redaction_revision: REPLACE_WITH_APPROVED_REVISION
+    truncated: true
+# This is a report shape, not a result of any enterprise query.

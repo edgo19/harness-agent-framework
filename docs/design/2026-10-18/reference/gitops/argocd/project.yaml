@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: harness
+  namespace: argocd
+spec:
+  sourceRepos:
+    - https://github.com/YOUR_ORG/harness-gitops.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: harness-control-dev
+    - server: https://kubernetes.default.svc
+      namespace: harness-control-prod
+  clusterResourceWhitelist: []
+  namespaceResourceWhitelist:
+    - group: apps
+      kind: Deployment
+    - group: ''
+      kind: Service
+    - group: ''
+      kind: ServiceAccount
+    - group: ''
+      kind: ConfigMap

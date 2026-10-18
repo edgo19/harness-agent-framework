@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-18",
+  "python": "3.12.14",
+  "verification": "pip wheel-only dependency resolution dry run; no packages installed and no application integration tested",
+  "distribution_count": 60,
+  "selected_packages": {
+    "deepagents": "0.7.28",
+    "langchain": "1.4.6",
+    "langgraph": "1.2.16",
+    "langchain-google-genai": "4.4.2",
+    "langgraph-checkpoint-postgres": "3.2.0",
+    "langchain-core": "1.6.12",
+    "langgraph-checkpoint": "4.3.0",
+    "langsmith": "0.14.11",
+    "psycopg": "3.3.6",
+    "psycopg-pool": "3.3.3"
+  },
+  "resolver_platform": {
+    "platform_system": "Linux",
+    "platform_machine": "x86_64"
+  }
+}

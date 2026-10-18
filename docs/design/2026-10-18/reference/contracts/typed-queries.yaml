@@ -1,0 +1,24 @@
+schema: MetricsQuery/v1
+source: argo-azure-cd-infrastructure
+window:
+  lookback: 30m
+plan:
+  metric_alias: reviewed-controller-reconcile-histogram
+  operation: histogram-percentile
+  percentile: 0.95
+  rate_window: 5m
+  group_by: [component]
+step_seconds: 60
+# Compiler binds the actual metric, source selectors, bucket schema and units.
+# Enabling requires verified onboarding; aliases here are illustrative.
+---
+schema: LogsQuery/v1
+source: argo-azure-cd-infrastructure
+window:
+  lookback: 30m
+literal_terms: [timeout]
+severity: [error, warn]
+parser: reviewed-controller-parser-v1
+group_by: [severity, normalized_message_pattern]
+max_entries: 200
+# No URL, tenant, namespace selector, raw regex or LogQL expression is supplied.

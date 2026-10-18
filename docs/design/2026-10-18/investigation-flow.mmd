@@ -1,0 +1,10 @@
+flowchart TD
+    GOAL[Goal, time window and approved source aliases] --> COVER[Coverage and freshness assessment]
+    COVER --> PLAN[Bounded hypotheses and query plan]
+    PLAN --> METRICS[Metrics analyst: coarse aggregates and changes]
+    PLAN --> LOGS[Logs analyst: scoped patterns and examples]
+    METRICS --> REVIEW[Evidence reviewer: align times, challenge claims]
+    LOGS --> REVIEW
+    REVIEW --> MORE{Useful additional evidence within budget?}
+    MORE -->|Yes, narrower follow-up| PLAN
+    MORE -->|No| REPORT[Validated report with coverage and recommendations]

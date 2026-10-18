@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: harness-control-prod
+resources:
+  - ../../base
+images:
+  - name: harness-runtime
+    newName: jfrog.example.invalid/harness/runtime
+    digest: sha256:1111111111111111111111111111111111111111111111111111111111111111
+  - name: harness-gateway
+    newName: jfrog.example.invalid/harness/gateway
+    digest: sha256:2222222222222222222222222222222222222222222222222222222222222222
+replicas:
+  - name: harness-dispatcher
+    count: 2
+  - name: harness-gateway
+    count: 2
+patches:
+  - target:
+      kind: ConfigMap
+      name: harness-identity-policy
+    patch: |-
+      - op: replace
+        path: /data/gateway_audience
+        value: https://harness-gateway.harness-control-prod.svc.cluster.local
+replacements:
+  - source:
+      kind: Deployment
+      name: harness-dispatcher
+      fieldPath: spec.template.spec.containers.[name=dispatcher].image
+    targets:
+      - select:
+          kind: ConfigMap
+          name: harness-worker-release
+        fieldPaths:
+          - data.image

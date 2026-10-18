@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harness-worker-release
+data:
+  image: harness-runtime:design
+  task_schema: TaskRequest/v1
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: harness-identity-policy
+data:
+  gateway_audience: REPLACE_WITH_ENVIRONMENT_GATEWAY_AUDIENCE
+  allowed_worker_subjects: '["REPLACE_WITH_WORKER_GSA_UNIQUE_ID"]'
+  authorization_mode: static-workload-class

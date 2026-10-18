@@ -1,0 +1,31 @@
+flowchart TB
+    CODE[Runtime repository] --> CI[Enterprise CI: checks and image build]
+    CI --> JF[JFrog immutable image digests]
+    JF --> CD[GitOps repository: reviewed promotion]
+    CD --> ARGO[Existing Argo CD / ApplicationSet / Kustomize]
+    MODULES[Terraform module repository] --> LIVE[Infra-live: Terragrunt, requests, schedules]
+    LIVE --> TF[Approved Terraform pipeline]
+    TF --> REQUESTS[GCS immutable request objects]
+    TF --> CONFIG[GCS versioned schedule registry]
+    REQUESTS --> PS[Pub/Sub request notification]
+    CLOCK[Cloud Scheduler heartbeat] --> TICKS[Pub/Sub schedule ticks]
+    subgraph GKE[Existing observability GKE cluster]
+        DIS[Dispatcher and reconciler]
+        WORKER[Generic worker Jobs: Deep Agents / LangGraph]
+        GW[Authenticated typed tool gateway]
+        TELE[Telemetry connector and query admission]
+        OBS[Existing internal Loki / Mimir]
+        DIS --> WORKER
+        WORKER --> GW --> TELE --> OBS
+    end
+    ARGO --> DIS
+    ARGO --> GW
+    ARGO --> TELE
+    PS --> DIS
+    TICKS --> DIS
+    CONFIG --> DIS
+    DIS --> SQL[(Cloud SQL: ledger, schedule cursors, budgets)]
+    WORKER --> SQL
+    TELE --> SQL
+    WORKER --> VERTEX[Regional Vertex AI]
+    WORKER --> OUT[GCS evidence and reports]

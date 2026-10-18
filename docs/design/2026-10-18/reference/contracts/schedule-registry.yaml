@@ -1,0 +1,22 @@
+schema: ScheduleRegistry/v1
+# Import ordering uses the authoritative GCS pointer generation, not this example label.
+revision_label: example-review-001
+schedules:
+  - id: pipeline-tools-health
+    enabled: true
+    cron: '*/30 * * * *'
+    time_zone: UTC
+    missed_run_grace: 10m
+    overlap_policy: forbid
+    misfire_policy: latest-eligible-only
+    task_template:
+      capability: pipeline-observability@1.0.0-design
+      goal: Review JFrog and CI hosting infrastructure health and explain supported anomalies.
+      parameters:
+        sources: [jfrog-infrastructure, ci-agent-infrastructure]
+        time_window:
+          lookback: 30m
+        analysis_mode: analyze-on-anomaly
+      outputs:
+        formats: [json, markdown]
+        destination: configured-gcs-reports

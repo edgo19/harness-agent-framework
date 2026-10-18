@@ -1,0 +1,27 @@
+schema: SourceInventory/v1
+revision: example-needs-onboarding
+environment: dev
+sources:
+  - id: argo-azure-cd-infrastructure
+    enabled: false
+    responsibility: enterprise-cd-controller-infrastructure
+    hosting_platform: aks
+    backend_aliases:
+      logs: existing-loki-read
+      metrics: existing-mimir-read
+    tenant_binding: trusted-environment-configuration
+    required_scope:
+      source_cluster_label: REPLACE_WITH_VERIFIED_INGESTION_LABEL_KEY
+      source_cluster_values: [REPLACE_WITH_CICD_HOSTING_CLUSTER]
+      component_label: REPLACE_WITH_VERIFIED_COMPONENT_LABEL_KEY
+      component_values: [REPLACE_WITH_ARGO_CONTROLLER_COMPONENT]
+      namespace_label: REPLACE_WITH_VERIFIED_NAMESPACE_LABEL_KEY
+      namespace_values: [REPLACE_WITH_CICD_NAMESPACE]
+    target_application_cluster_data: excluded
+    metric_templates: [reconcile-latency, component-error-rate]
+    log_templates: [bounded-errors, controller-message-patterns]
+    expected_cadence_seconds: null
+    retention_seconds: null
+    onboarding_state: unverified
+# Disabled until real trusted labels, routes, tenant and coverage have been validated.
+# Equivalent reviewed entries are required before enabling JFrog or CI-agent sources.

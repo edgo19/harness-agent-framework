@@ -1,0 +1,2 @@
+environment: prod
+clusterName: in-cluster

@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: harness-control
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: [missingkey=error]
+  generators:
+    - git:
+        repoURL: https://github.com/YOUR_ORG/harness-gitops.git
+        revision: main
+        files:
+          - path: clusters/*.yaml
+  template:
+    metadata:
+      name: 'harness-control-{{ .environment }}'
+    spec:
+      project: harness
+      source:
+        repoURL: https://github.com/YOUR_ORG/harness-gitops.git
+        targetRevision: main
+        path: 'apps/control/overlays/{{ .environment }}'
+      destination:
+        name: '{{ .clusterName }}'
+        namespace: 'harness-control-{{ .environment }}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=false
